@@ -1,0 +1,23 @@
+name: kaggle
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - numpy=1.26
+  - pandas
+  - scikit-learn
+  - xgboost
+  - catboost
+  - lightgbm
+  - optuna
+  - joblib
+  - seaborn
+  - plotly
+  - ipykernel
+  - notebook
+  - mols2grid
+  - rdkit
+  - mordredcommunity
+  - pip
+  - pip:
+      - epam.indigo
