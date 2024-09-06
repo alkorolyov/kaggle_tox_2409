@@ -97,7 +97,10 @@ def main():
 
     model = RandomForestClassifier(**cls_params)
     sampler = TPESampler(seed=RANDOM_SEED)
-    study = optuna.create_study(direction="maximize", sampler=sampler)
+    study = optuna.create_study(
+        storage=f"sqlite:///../data/tuning/optuna.db",
+        direction="maximize", sampler=sampler
+    )
 
     # We first try the model using all features
     default_features = {ft: True for ft in feature_list}
