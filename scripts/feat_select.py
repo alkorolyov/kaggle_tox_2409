@@ -84,7 +84,6 @@ def main():
     parser.add_argument('-n', '--n_jobs', type=int, default=12, help='CPU cores used')
     args = parser.parse_args()
 
-
     X_train = pd.read_pickle('../data/processed/X_train_2.pkl.zip')
     y_train = pd.read_pickle('../data/processed/y_train_2.pkl')
     feature_list = [s for s in X_train.columns if '_' in s]
@@ -98,10 +97,11 @@ def main():
     model = RandomForestClassifier(**cls_params)
     sampler = TPESampler(seed=RANDOM_SEED)
     study = optuna.create_study(
-        study_name='feat_sel_study_rf_ds01',
+        study_name='feat_sel_study_rf_ds02',
         storage=f"sqlite:///../data/tuning/optuna.db",
         direction="maximize",
         sampler=sampler,
+        load_if_exists=True,
     )
 
     # We first try the model using all features
