@@ -98,8 +98,10 @@ def main():
     model = RandomForestClassifier(**cls_params)
     sampler = TPESampler(seed=RANDOM_SEED)
     study = optuna.create_study(
+        study_name='feat_sel_study_rf_ds01',
         storage=f"sqlite:///../data/tuning/optuna.db",
-        direction="maximize", sampler=sampler
+        direction="maximize",
+        sampler=sampler,
     )
 
     # We first try the model using all features
@@ -116,8 +118,7 @@ def main():
         # feat_count_penalty = 1e-4,
     ), n_trials=4096, show_progress_bar=True)
 
-    with open('../data/tuning/feat_sel_study_rf_ds01.pkl', 'wb') as f:
-        pickle.dump(study, f)
 
 if __name__ == '__main__':
     main()
+
