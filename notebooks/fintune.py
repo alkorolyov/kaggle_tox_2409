@@ -25,8 +25,10 @@ mae = 'neg_mean_absolute_error'
 mse = 'neg_mean_squared_error'
 rmse = 'neg_root_mean_squared_error'
 roc_auc = 'neg_roc_auc_score'
-N_JOBS = 12
+
+N_JOBS = 24
 RANDOM_SEED = 42
+
 
 def get_objectives(X, y):
     objectives = {}
