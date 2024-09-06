@@ -34,7 +34,7 @@ def get_objectives(X, y):
     # Logistic Regression
     def logistic_regression_objective(trial):
         params = {
-            'C': trial.suggest_loguniform('C', 1e-4, 1e2),
+            'C': trial.suggest_float('C', 1e-4, 1e2, log=True),
             'penalty': trial.suggest_categorical('penalty', ['l1', 'l2']),
             'solver': trial.suggest_categorical('solver', ['liblinear', 'saga']),
             'max_iter': trial.suggest_int('max_iter', 100, 500)
@@ -61,7 +61,7 @@ def get_objectives(X, y):
     # SVC
     def svc_objective(trial):
         params = {
-            'C': trial.suggest_loguniform('C', 1e-2, 1e2),
+            'C': trial.suggest_float('C', 1e-2, 1e2, log=True),
             'kernel': trial.suggest_categorical('kernel', ['linear', 'poly', 'rbf', 'sigmoid']),
             'gamma': trial.suggest_categorical('gamma', ['scale', 'auto'])
         }
@@ -87,10 +87,10 @@ def get_objectives(X, y):
     def xgb_objective(trial):
         params = {
             'n_estimators': trial.suggest_categorical('n_estimators', [50, 100, 200, 400, 800, 1000, 2000, 5000]),
-            'learning_rate': trial.suggest_loguniform('learning_rate', 1e-4, 1.0),
+            'learning_rate': trial.suggest_float('learning_rate', 1e-4, 1.0, log=True),
             'max_depth': trial.suggest_int('max_depth', 3, 10),
-            'subsample': trial.suggest_uniform('subsample', 0.5, 1.0),
-            'colsample_bytree': trial.suggest_uniform('colsample_bytree', 0.5, 1.0)
+            'subsample': trial.suggest_float('subsample', 0.5, 1.0),
+            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 1.0)
         }
         clf = xgb.XGBClassifier(random_state=RANDOM_SEED, n_jobs=N_JOBS, verbosity=0, **params)
         kfold = KFold(n_splits=5, shuffle=True, random_state=RANDOM_SEED)
@@ -101,7 +101,7 @@ def get_objectives(X, y):
     def catboost_objective(trial):
         params = {
             'iterations': trial.suggest_categorical('n_estimators', [50, 100, 200, 400, 800, 1000, 2000, 5000]),
-            'learning_rate': trial.suggest_loguniform('learning_rate', 1e-4, 1.0),
+            'learning_rate': trial.suggest_float('learning_rate', 1e-4, 1.0, log=True),
             'l2_leaf_reg': trial.suggest_float('l2_leaf_reg', 1e-2, 10.0, log=True),
             'subsample': trial.suggest_float('subsample', 0.5, 1.0),
             'colsample_bylevel': trial.suggest_float('colsample_bylevel', 0.5, 1.0),
@@ -116,7 +116,7 @@ def get_objectives(X, y):
     def lgbm_objective(trial):
         params = {
             'n_estimators': trial.suggest_categorical('n_estimators', [50, 100, 200, 400, 800, 1000, 2000, 5000]),
-            'learning_rate': trial.suggest_loguniform('learning_rate', 1e-4, 1.0),
+            'learning_rate': trial.suggest_float('learning_rate', 1e-4, 1.0, log=True),
             'max_depth': trial.suggest_int('max_depth', 3, 10),
             'num_leaves': trial.suggest_int('num_leaves', 20, 150)
         }
@@ -138,21 +138,6 @@ def get_objectives(X, y):
 
 
 if __name__ == '__main__':
-    ds = [
-        {
-            'X': pd.read_pickle('../data/processed/X_train_1.pkl'),
-            'y': pd.read_pickle('../data/processed/y_train_1.pkl'),
-        },
-        {
-            'X': pd.read_pickle('../data/processed/X_train_2.pkl'),
-            'y': pd.read_pickle('../data/processed/y_train_2.pkl'),
-        },
-        {
-            'X': pd.read_pickle('../data/processed/X_train_3.pkl'),
-            'y': pd.read_pickle('../data/processed/y_train_3.pkl'),
-        }
-    ]
-
     X = pd.read_pickle('../data/processed/X_train_2.pkl')
     y = pd.read_pickle('../data/processed/y_train_2.pkl')
 
