@@ -88,11 +88,12 @@ def get_objectives(X, y):
     # XGBoost
     def xgb_objective(trial):
         params = {
-            'n_estimators': trial.suggest_categorical('n_estimators', [50, 100, 200, 400, 800, 1000, 2000, 5000]),
-            'learning_rate': trial.suggest_float('learning_rate', 1e-4, 1.0, log=True),
+            'n_estimators': trial.suggest_categorical('n_estimators', [200, 400, 1000, 2000, 5000]),
+            'learning_rate': trial.suggest_float('learning_rate', 1e-3, 0.1, log=True),
             'max_depth': trial.suggest_int('max_depth', 3, 10),
-            'subsample': trial.suggest_float('subsample', 0.5, 1.0),
-            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 1.0)
+            'subsample': trial.suggest_float('subsample', 0.05, 1.0),
+            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.05, 1.0),
+            'min_child_weight': trial.suggest_int('min_child_weight', 0.1, 1.0, log=True),
         }
         clf = xgb.XGBClassifier(random_state=RANDOM_SEED, n_jobs=N_JOBS, verbosity=0, **params)
         kfold = KFold(n_splits=5, shuffle=True, random_state=RANDOM_SEED)
