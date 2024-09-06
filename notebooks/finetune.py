@@ -141,7 +141,7 @@ def get_objectives(X, y):
 
 
 if __name__ == '__main__':
-    X = pd.read_pickle('../data/processed/X_train_2.pkl')
+    X = pd.read_pickle('../data/processed/X_train_2.pkl.zip')
     y = pd.read_pickle('../data/processed/y_train_2.pkl')
 
     FPS_OFFSET = get_fps_offset(X.columns)
