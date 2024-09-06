@@ -90,7 +90,7 @@ def main():
 
     cls_params = {
         "random_state": RANDOM_SEED,
-        "n_jobs": args.n_jobs,
+        "n_jobs": 6,
         "verbose": False
     }
 
@@ -110,13 +110,17 @@ def main():
 
     optuna.logging.set_verbosity(optuna.logging.WARN)
 
-    study.optimize(FeatureSelectionOptuna(
-        model=model,
-        features=feature_list,
-        X=X_train,
-        y=y_train,
-        # feat_count_penalty = 1e-4,
-    ), n_trials=4096, show_progress_bar=True)
+    study.optimize(
+        FeatureSelectionOptuna(
+            model=model,
+            features=feature_list,
+            X=X_train,
+            y=y_train,
+            # feat_count_penalty = 1e-4,
+        ),
+        n_trials=4096,
+        n_jobs=4,
+        show_progress_bar=True)
 
 
 if __name__ == '__main__':
