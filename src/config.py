@@ -6,3 +6,5 @@ os.environ['PYTHONWARNINGS'] = 'ignore::FutureWarning'
 warnings.filterwarnings("ignore")
 
 mem = Memory(location='../data/.cache')
+
+RANDOM_SEED = 42

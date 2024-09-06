@@ -1,6 +1,7 @@
 name: kaggle
 channels:
   - conda-forge
+  - dglteam
 dependencies:
   - python=3.10
   - numpy=1.26
@@ -17,6 +18,9 @@ dependencies:
   - notebook
   - mols2grid
   - rdkit
+  - molfeat
+  - dglteam::dgl<=2.0
+  - dgllifey
   - mordredcommunity
   - pip
   - pip:
