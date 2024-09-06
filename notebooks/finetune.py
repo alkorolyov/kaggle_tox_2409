@@ -93,7 +93,7 @@ def get_objectives(X, y):
             'max_depth': trial.suggest_int('max_depth', 3, 10),
             'subsample': trial.suggest_float('subsample', 0.05, 1.0),
             'colsample_bytree': trial.suggest_float('colsample_bytree', 0.05, 1.0),
-            'min_child_weight': trial.suggest_int('min_child_weight', 0.1, 1.0, log=True),
+            'min_child_weight': trial.suggest_float('min_child_weight', 0.1, 1.0, log=True),
         }
         clf = xgb.XGBClassifier(random_state=RANDOM_SEED, n_jobs=N_JOBS, verbosity=0, **params)
         kfold = KFold(n_splits=5, shuffle=True, random_state=RANDOM_SEED)
