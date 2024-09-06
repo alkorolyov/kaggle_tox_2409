@@ -149,12 +149,12 @@ if __name__ == '__main__':
     X_scaled = scaler.fit_transform(X.values)
 
     objectives = get_objectives(X_scaled, y)
-    for name in ['SVC', 'RF', 'XGB', 'CB', 'LGB']:
+    # for name in ['SVC', 'RF', 'XGB', 'CB', 'LGB']:
     # for name in ['SVC', 'RF', 'XGB', 'LGB']:
-    # for name in ['RF']:
+    for name in ['XGB']:
         obj = objectives[name]
         study = optuna.create_study(direction='maximize')
-        study.optimize(obj, n_trials=2)
+        study.optimize(obj, n_trials=200)
         with open('../data/tuning/' + name + '_dataset_2_.pkl', 'wb') as f:
             pickle.dump(study, f)
 
