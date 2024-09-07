@@ -8,9 +8,11 @@ from rdkit import RDLogger
 
 from rdkit.Chem import DataStructs
 from rdkit.Chem.rdMolDescriptors import GetHashedMorganFingerprint
+from rdkit.Chem import rdFingerprintGenerator
 from rdkit.Avalon.pyAvalonTools import GetAvalonCountFP
 from rdkit.Chem import rdReducedGraphs
 from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
+
 
 from molfeat.trans.pretrained import PretrainedDGLTransformer
 
@@ -67,35 +69,38 @@ def count_to_array(fingerprint):
     return array
 
 
-def smiles_to_rdmols(smiles: pd.Series):
+def smi_to_mols(smiles: pd.Series):
     return smiles.apply(Chem.MolFromSmiles)
 
 
-def get_avalon_fingerprints(smiles, n_bits=1024):
-    molecules = mem.cache(smiles_to_rdmols)(smiles)
+def get_avalon_fingerprints(smiles: pd.Series, n_bits=1024):
+    molecules = mem.cache(smi_to_mols)(smiles)
     fingerprints = molecules.apply(lambda x: GetAvalonCountFP(x, nBits=n_bits))
 
     fingerprints = fingerprints.apply(count_to_array)
-    res = np.stack(fingerprints.values)
+    fps = np.stack(fingerprints.values)
+    cols = ['avalon_' + str(i) for i in range(fps.shape[1])]
 
-    return pd.DataFrame(res, index=smiles.index,)
+    return pd.DataFrame(fps, index=smiles.index, columns=cols)
 
 
-def get_morgan_fingerprints(smiles, n_bits=1024, radius=2):
-    molecules = mem.cache(smiles_to_rdmols)(smiles)
-    fingerprints = molecules.apply(lambda x:
-                                   GetHashedMorganFingerprint(x, nBits=n_bits, radius=radius))
+def get_morgan_fingerprints(smiles: pd.Series, n_bits=1024, radius=2):
+    molecules = mem.cache(smi_to_mols)(smiles)
+    mfpgen = rdFingerprintGenerator.GetMorganGenerator(radius=radius, fpSize=n_bits)
 
-    fingerprints = fingerprints.apply(count_to_array)
+    fps = np.stack(mfpgen.GetFingerprints(molecules))
+    cols = ['morgan_' + str(i) for i in range(fps.shape[1])]
 
-    return np.stack(fingerprints.values)
+    return pd.DataFrame(fps, index=smiles.index, columns=cols)
 
 
 def get_erg_fingerprints(smiles):
-    molecules = mem.cache(smiles_to_rdmols)(smiles)
+    molecules = mem.cache(smi_to_mols)(smiles)
     fingerprints = molecules.apply(rdReducedGraphs.GetErGFingerprint)
+    fps = np.stack(fingerprints.values)
+    cols = ['erg_' + str(i) for i in range(fps.shape[1])]
 
-    return np.stack(fingerprints.values)
+    return pd.DataFrame(fps, index=smiles.index, columns=cols)
 
 
 # from https://www.blopig.com/blog/2022/06/how-to-turn-a-molecule-into-a-vector-of-physicochemical-descriptors-using-rdkit/
@@ -143,8 +148,9 @@ def get_rd_descriptors_list():
     return chosen_descriptors
 
 
-def get_rdkit_features(smiles):
-    molecules = mem.cache(smiles_to_rdmols)(smiles)
+def get_rdkit_features(smiles: pd.Series):
+    molecules = mem.cache(smi_to_mols)(smiles)
+
     calculator = MolecularDescriptorCalculator(get_rd_descriptors_list())
 
     X_rdkit = molecules.apply(
@@ -152,17 +158,17 @@ def get_rdkit_features(smiles):
     )
 
     X_rdkit = np.vstack(X_rdkit.values)
-
-    return X_rdkit
+    rd_cols = ['rd_' + str(c) for c in get_rd_descriptors_list()]
+    return pd.DataFrame(X_rdkit, columns=rd_cols, index=smiles.index)
 
 
 def get_mord_features(smiles):
     from mordred import Calculator, descriptors
     import multiprocessing as mp
 
-    molecules = mem.cache(smiles_to_rdmols)(smiles)
+    molecules = mem.cache(smi_to_mols)(smiles)
     calc = Calculator(descriptors)
-    md_cols = [str(d) for d in calc.descriptors]
+    md_cols = ['md_' + str(d) for d in calc.descriptors]
 
     def calc_md(mol):
         return calc(mol).fill_missing()
@@ -173,7 +179,7 @@ def get_mord_features(smiles):
 
 
 def get_gin_supervised_masking(smiles):
-    molecules = mem.cache(smiles_to_rdmols)(smiles)
+    molecules = mem.cache(smi_to_mols)(smiles)
     transformer = PretrainedDGLTransformer(kind='gin_supervised_masking', dtype=float)
     result = transformer(molecules)
     gin_cols = ['gin_' + str(i) for i in range(len(result[1]))]
@@ -181,14 +187,14 @@ def get_gin_supervised_masking(smiles):
     return pd.DataFrame(result, index=smiles.index, columns=gin_cols)
 
 
-def get_fingerprints(
+def get_representation(
         smiles: pd.Series,
         morgan_fps=True,
         avalon_fps=True,
         erg_fps=True,
         rdkit_feats=True,
         mord_feats=False,
-        gin_gnn=True,
+        gin_gnn=False,
         ):
     RDLogger.DisableLog('rdApp.*')
 
@@ -206,6 +212,6 @@ def get_fingerprints(
         fingerprints.append(mem.cache(get_mord_features)(smiles))
     if gin_gnn:
         fingerprints.append(mem.cache(get_gin_supervised_masking)(smiles))
-    return np.concatenate(fingerprints, axis=1)
+    return pd.concat(fingerprints, axis=1)
 
 
