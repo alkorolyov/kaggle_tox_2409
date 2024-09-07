@@ -6,6 +6,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold, RepeatedKFold
 import lightgbm as lgb
+import xgboost as xgb
 
 RANDOM_SEED = 42
 
@@ -101,10 +102,13 @@ def main():
         features.append(c)
 
     clf = lgb.LGBMClassifier(random_state=RANDOM_SEED, n_jobs=-1, verbose=-1)
+    clf = xgb.XGBClassifier(random_state=RANDOM_SEED, n_jobs=-1, verbosity=0,
+                                  tree_method='gpu_hist', predictor='gpu_predictor', gpu_id=1)
+
 
     sampler = TPESampler(seed=RANDOM_SEED)
     study = optuna.create_study(
-        study_name='lgb_fps_groups_rd_md',
+        study_name='xgb_gpu_fps_groups_rd_md',
         # storage=f"sqlite:///../data/tuning/optuna.db",
         direction="maximize",
         sampler=sampler,
