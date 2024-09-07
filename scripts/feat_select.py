@@ -1,15 +1,13 @@
-import argparse
-import pickle
 import optuna
-import numpy as np
 from optuna.samplers import TPESampler
-from sklearn.ensemble import RandomForestClassifier
+
 import pandas as pd
-from sklearn.metrics import root_mean_squared_error, roc_auc_score
-from sklearn.model_selection import KFold
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import KFold, RepeatedKFold
+import lightgbm as lgb
 
 RANDOM_SEED = 42
-
 
 class FeatureSelectionOptuna:
     """
@@ -32,97 +30,105 @@ class FeatureSelectionOptuna:
                  X,
                  y,
                  features=None,
+                 group_feats=None,
                  loss_fn=roc_auc_score,
-                 cv=None,
-                 feat_count_penalty=0,
                  ):
-
         self.model = model
         self.X = X
         self.y = y
-
-        if features is None:
-            self.features = list(X.columns)
-        else:
-            self.features = features
-
+        self.features = features
+        self.group_feats = group_feats
         self.loss_fn = loss_fn
-
-        if cv is None:
-            kfold = KFold(n_splits=5, shuffle=True, random_state=RANDOM_SEED)
-            self.splits = list(kfold.split(X))
-        else:
-            self.splits = list(cv.split(X))
-
-        self.feat_count_penalty = feat_count_penalty
 
     def __call__(self,
                  trial: optuna.trial.Trial):
+        """
+        self.group_feats = {
+            'group_1': ['feat_1', 'feat_2', ... ],
+            ...
+        }
 
-        # Select True / False for each feature
-        selected_features = [trial.suggest_categorical(name, [True, False]) for name in self.features]
+        """
 
-        # List with names of selected features
-        selected_feature_names = [name for name, selected in zip(self.features, selected_features) if selected]
+        groups = [k for k in self.group_feats if trial.suggest_categorical(k, [True, False])]
+        group_feats_selected = []
+        [group_feats_selected.extend(self.group_feats[k]) for k in groups]
 
-        # Optional: adds a feat_count_penalty for the amount of features used
-        n_used = len(selected_feature_names)
-        total_penalty = n_used * self.feat_count_penalty
+        feature = {name: trial.suggest_categorical(name, [True, False]) for name in self.features}
+        feats_selected = [k for k, v in feature.items() if v]
 
-        X_selected = self.X[selected_feature_names].copy()
+        # print(group_feats_selected)
 
-        from sklearn.model_selection import cross_val_score
+        X_selected = self.X[feats_selected + group_feats_selected].copy()
 
-        kfold = KFold(n_splits=5, shuffle=True, random_state=RANDOM_SEED)
-        cv_res = cross_val_score(self.model, X_selected, self.y, cv=kfold, scoring='roc_auc')
-        score = (cv_res.mean() - cv_res.std()) - total_penalty
+        kfold = RepeatedKFold(n_splits=5, n_repeats=3, random_state=RANDOM_SEED)
+
+        cv_res = cross_val_score(
+            self.model,
+            X_selected, self.y,
+            cv=kfold,
+            scoring='roc_auc')
+        score = (cv_res.mean() - cv_res.std())
         return score
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-n', '--n_jobs', type=int, default=12, help='CPU cores used')
-    args = parser.parse_args()
+    X_train = pd.read_pickle('../data/processed/X_train_full.pkl.zip')
+    y_train = pd.read_pickle('../data/processed/y_train.pkl')
 
-    X_train = pd.read_pickle('../data/processed/X_train_2.pkl.zip')
-    y_train = pd.read_pickle('../data/processed/y_train_2.pkl')
-    feature_list = [s for s in X_train.columns if '_' in s]
-
-    cls_params = {
-        "random_state": RANDOM_SEED,
-        "n_jobs": 6,
-        "verbose": False
+    groups = {
+        'morgan': [],
+        'avalon': [],
+        'erg': [],
+        'gin': [],
     }
 
-    model = RandomForestClassifier(**cls_params)
+    features = []
+
+    for c in X_train.columns:
+        if 'morgan_' in c:
+            groups['morgan'].append(c)
+            continue
+        if 'avalon_' in c:
+            groups['avalon'].append(c)
+            continue
+        if 'erg_' in c:
+            groups['erg'].append(c)
+            continue
+        if 'gin_' in c:
+            groups['gin'].append(c)
+            continue
+        features.append(c)
+
+    clf = lgb.LGBMClassifier(random_state=RANDOM_SEED, n_jobs=-1, verbose=-1)
+
     sampler = TPESampler(seed=RANDOM_SEED)
     study = optuna.create_study(
-        study_name='feat_sel_study_rf_ds02',
-        storage=f"sqlite:///../data/tuning/optuna.db",
+        study_name='lgb_fps_groups_rd_md',
+        # storage=f"sqlite:///../data/tuning/optuna.db",
         direction="maximize",
         sampler=sampler,
         load_if_exists=True,
     )
 
-    # We first try the model using all features
-    default_features = {ft: True for ft in feature_list}
-    study.enqueue_trial(default_features)
-
-    optuna.logging.set_verbosity(optuna.logging.WARN)
+    # Set all groups and features to True
+    opt_params = [k for k in groups] + features
+    default_params = {k: True for k in opt_params}
+    study.enqueue_trial(default_params)
+    optuna.logging.set_verbosity(optuna.logging.INFO)
 
     study.optimize(
         FeatureSelectionOptuna(
-            model=model,
-            features=feature_list,
+            model=clf,
+            features=features,
+            group_feats=groups,
             X=X_train,
             y=y_train,
-            # feat_count_penalty = 1e-4,
         ),
-        n_trials=4096,
-        n_jobs=4,
+        n_trials=10,
+        n_jobs=1,
         show_progress_bar=True)
 
 
 if __name__ == '__main__':
     main()
-
