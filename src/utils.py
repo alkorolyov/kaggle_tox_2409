@@ -19,14 +19,24 @@ class OffsetScaler(BaseEstimator, TransformerMixin):
         self.scaler = None
 
     def fit(self, X, y=None):
+        if isinstance(X, pd.DataFrame):
+            X = X.values
         self.scaler = StandardScaler().fit(X[:, self.offset:])
         return self
 
-    def transform(self, X, y=None):
+    def _transform(self, X: np.ndarray) -> np.ndarray:
         x_fix = X[:, :self.offset]
         x_scale = self.scaler.transform(X[:, self.offset:])
         x_trans = np.hstack([x_fix, x_scale])
         return x_trans
+
+    def transform(self, X, y=None):
+        if isinstance(X, pd.DataFrame):
+            x_trans = self._transform(X.values)
+            return pd.DataFrame(x_trans, index=X.index, columns=X.columns)
+        elif isinstance(X, np.ndarray):
+            return self._transform(X)
+
 
 
 def get_fps_cols(cols):
@@ -76,14 +86,27 @@ def smi2mol(smiles: str) -> Chem.Mol:
     return Chem.MolFromSmiles(smiles) if pd.notna(smiles) else None
 
 
-def eval_model(name, model, X, y, random_seed=42):
+def eval_model(name, model, X, y, random_seed=42, scoring='roc_auc', to_scale=True):
     tic = time.time()
+    if to_scale:
+        X = scale(X)
 
     kfold = KFold(n_splits=5, shuffle=True, random_state=random_seed)
-    cv_res = cross_val_score(model, scale(X), y, cv=kfold, scoring='roc_auc')
+    cv_res = cross_val_score(model, X, y, cv=kfold, scoring=scoring)
 
     score = cv_res.mean() - cv_res.std()
 
     toc = time.time()
-    print("%7s: %3.3f    (%3.3f ± %3.3f)    %.1fs" % (name, score, cv_res.mean(), cv_res.std(), toc - tic))
+    print("%7s: %3.4f    (%3.3f ± %3.3f)    %.1fs" % (name, score, cv_res.mean(), cv_res.std(), toc - tic))
     return cv_res
+
+
+def arr_to_submit(arr):
+    return pd.Series(arr, index=pd.RangeIndex(len(arr), name='id'), name='Y')
+
+
+def drop_nans_non_unique(df):
+    df.dropna(axis=1, inplace=True)
+    df = df.loc[:, df.nunique() > 1].copy()
+    return df
+

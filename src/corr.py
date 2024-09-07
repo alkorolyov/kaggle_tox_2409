@@ -3,8 +3,13 @@ import numpy as np
 from copy import deepcopy
 import networkx as nx
 from networkx.algorithms.approximation import min_weighted_vertex_cover
+from src.config import mem
 
-def non_corr_features(corr, weights=None, threshold: float = 0.95):
+def get_corr(df):
+    return df.corr()
+
+
+def _non_corr_features(corr, weights=None, threshold: float = 0.95):
     ids = (np.triu(corr, k=1) > threshold).nonzero()
     G = nx.Graph()
 
@@ -27,7 +32,7 @@ def non_corr_features(corr, weights=None, threshold: float = 0.95):
     return non_corr_ids
 
 
-def noncorrelated_features(corr: pd.DataFrame, threshold: float = 0.95):
+def non_corr_ids(corr: pd.DataFrame, threshold: float = 0.95):
     """
     Filters correlated features to only those that are not correlated above
     the indicated threshold. Uses graph min_weighted_vertex_cover to compute the
@@ -62,3 +67,8 @@ def noncorrelated_features(corr: pd.DataFrame, threshold: float = 0.95):
     return non_corr
 
 
+def non_corr_features(X: pd.DataFrame, y: pd.DataFrame, threshold: float = 0.95) -> pd.DataFrame:
+    df = pd.concat([X, y], axis=1)
+    corr = mem.cache(get_corr)(df)
+    ids = non_corr_ids(corr, threshold)
+    return X.iloc[:, ids]

@@ -1,7 +1,9 @@
-name: kaggle
+name: mlchem
 channels:
   - conda-forge
   - dglteam
+  - pytorch
+  - nvidia
 dependencies:
   - python=3.10
   - numpy=1.26
@@ -20,7 +22,7 @@ dependencies:
   - rdkit
   - molfeat
   - dglteam::dgl<=2.0
-  - dgllifey
+  - dgllife
   - mordredcommunity
   - pip
   - pip:
