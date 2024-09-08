@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
+from molfeat.trans.pretrained import PretrainedDGLTransformer, PretrainedHFTransformer
 from mordred import Calculator, descriptors
 
 # choose 200 molecular descriptors
@@ -39,3 +40,12 @@ def get_md_descriptors(mol, names: list = None) -> pd.Series:
     idx = ['md_' + d for d in names]
     res = calc(mol).fill_missing()
     return pd.Series(pd.to_numeric(res, errors='coerce'), index=idx)
+
+
+def get_dgl_predictions(smiles: pd.Series, params: dict, n_jobs=-1, dtype=np.float32):
+    trans = PretrainedDGLTransformer(**params, dtype=dtype, n_jobs=n_jobs)
+    return trans.transform(smiles)
+
+def get_hft_predictions(smiles: pd.Series, params: dict, n_jobs=-1, dtype=np.float32, device='cpu'):
+    trans = PretrainedHFTransformer(**params, n_jobs=n_jobs, dtype=dtype, device=device)
+    return trans.transform(smiles)
