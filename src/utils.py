@@ -7,7 +7,7 @@ from rdkit import Chem
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.base import TransformerMixin, BaseEstimator
-from sklearn.model_selection import KFold, cross_val_score
+from sklearn.model_selection import KFold, cross_val_score, StratifiedKFold
 from sklearn.base import BaseEstimator, ClassifierMixin
 from joblib import Parallel, delayed
 
@@ -133,14 +133,14 @@ def eval_model(name, model, X, y, random_seed=42, cv=None, scoring='roc_auc'):
         X = X.values
 
     if cv is None:
-        cv = KFold(n_splits=5, shuffle=True, random_state=random_seed)
+        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_seed)
 
     cv_res = cross_val_score(model, X, y, cv=cv, scoring=scoring)
 
     score = cv_res.mean() - cv_res.std()
 
     toc = time.time()
-    print("%16s: %3.4f    (%3.3f ± %3.3f)    %.1fs" % (name, score, cv_res.mean(), cv_res.std(), toc - tic))
+    print("%-15s %3.4f    (%3.3f ± %3.3f)    %.1fs" % (name, score, cv_res.mean(), cv_res.std(), toc - tic))
     return cv_res
 
 
