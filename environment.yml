@@ -1,12 +1,12 @@
-name: mlchem
+name: chem
 channels:
   - conda-forge
-  - dglteam
   - pytorch
   - nvidia
 dependencies:
   - python=3.10
-  - numpy=1.26
+  # ml
+  - numpy<=1.26
   - pandas
   - scikit-learn
   - xgboost
@@ -18,12 +18,18 @@ dependencies:
   - plotly
   - ipykernel
   - notebook
+  - pytorch::pytorch
+  - pytorch::pytorch-cuda=11.8
+  - transformers
+  # chem
   - mols2grid
   - rdkit
+  - datamol
   - molfeat
   - dglteam::dgl<=2.0
   - dgllife
   - mordredcommunity
+#  - tmap::tmap
   - pip
   - pip:
       - epam.indigo
