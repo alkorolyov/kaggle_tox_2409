@@ -53,7 +53,7 @@ def get_hft_predictions(smiles: pd.Series, params: dict, n_jobs=-1, dtype=np.flo
     trans = PretrainedHFTransformer(**params, n_jobs=n_jobs, dtype=dtype, device=device)
     return trans.transform(smiles)
 
-def get_3d_predictions(smiles: pd.Series, params: dict, n_jobs=-1):
+def get_3d_predictions(smiles: pd.Series, params: dict, dtype=np.float32, n_jobs=-1):
     mols = mem.cache(embed3d)(smiles, n_confs=None)
-    trans = FPVecTransformer(**params, n_jobs=n_jobs)
+    trans = FPVecTransformer(**params, n_jobs=n_jobs, dtype=dtype)
     return trans.transform(mols)

@@ -34,4 +34,5 @@ dependencies:
 #  - tmap::tmap
   - pip
   - pip:
+      - Auto3D
       - epam.indigo

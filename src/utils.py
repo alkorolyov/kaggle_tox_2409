@@ -133,7 +133,7 @@ def eval_model(name, model, X, y, random_seed=42, cv=None, scoring='roc_auc'):
         X = X.values
 
     if cv is None:
-        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=random_seed)
+        cv = KFold(n_splits=5, shuffle=True, random_state=random_seed)
 
     cv_res = cross_val_score(model, X, y, cv=cv, scoring=scoring)
 
