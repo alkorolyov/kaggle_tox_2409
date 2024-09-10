@@ -28,8 +28,8 @@ from rdkit import RDLogger, Chem
 RDLogger.DisableLog('rdApp.*')
 
 if __name__ == '__main__':
-    train_df = dm.read_csv("../data/processed/train.csv", smiles_column="smi", index_col=0)[:2]
-    test_df = dm.read_csv("../data/processed/test.csv", smiles_column="smi", index_col=0)[:2]
+    train_df = dm.read_csv("../data/processed/train.csv", smiles_column="smi", index_col=0)
+    test_df = dm.read_csv("../data/processed/test.csv", smiles_column="smi", index_col=0)
     y_train = pd.read_pickle('../data/processed/y_train.pkl')
     ohe = OneHotEncoder(sparse_output=False)
 
