@@ -7,9 +7,11 @@ channels:
 dependencies:
   - python=3.10
   # ml
-  - numpy<=1.26
+  - numpy<2.0
+  - mkl=2024.0
+  - python-dotenv
   - pandas
-  - rapids=24.08
+  - rapids
   - scikit-learn
   - xgboost
   - catboost
@@ -23,6 +25,9 @@ dependencies:
   - pytorch::pytorch
   - pytorch::pytorch-cuda=11.8
   - transformers
+  - autogluon
+  - ray-tune >=2.6.3,<2.7
+  - ray-default >=2.6.3,<2.7
   # chem
   - mols2grid
   - rdkit

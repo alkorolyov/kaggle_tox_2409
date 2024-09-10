@@ -47,22 +47,22 @@ def get_md_descriptors(mol, names: list = None) -> pd.Series:
     return pd.Series(pd.to_numeric(res, errors='coerce'), index=idx)
 
 
-def calc_dgl_feats(smiles: pd.Series, n_jobs=-1, dtype=np.float32, **params):
-    trans = PretrainedDGLTransformer(**params, n_jobs=n_jobs, dtype=dtype)
+def calc_dgl_feats(smiles: pd.Series, **params):
+    trans = PretrainedDGLTransformer(**params, n_jobs=-1)
     return trans.transform(smiles)
 
 
 def calc_hft_feats(smiles: pd.Series, **params):
-    trans = PretrainedHFTransformer(**params)
+    trans = PretrainedHFTransformer(**params, n_jobs=-1)
     return trans.transform(smiles)
 
 
-def calc_2d_feats(smiles: pd.Series, n_jobs=1, dtype=np.float32, **params):
-    trans = FPVecTransformer(**params, n_jobs=n_jobs, dtype=dtype)
+def calc_2d_feats(smiles: pd.Series, n_jobs=1, **params):
+    trans = FPVecTransformer(**params, n_jobs=n_jobs)
     return trans.transform(smiles)
 
 
-def calc_3d_feats(smiles: pd.Series, n_jobs=-1, dtype=np.float32, **params):
-    mols = mem.cache(embed_auto3d, ignore=['use_gpu', 'verbose'])(smiles)
-    trans = FPVecTransformer(**params, n_jobs=n_jobs, dtype=dtype)
+def calc_3d_feats(smiles: pd.Series, **params):
+    mols = mem.cache(embed3d)(smiles)
+    trans = FPVecTransformer(**params)
     return trans.transform(mols, ignore_errors=True)

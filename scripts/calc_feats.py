@@ -43,14 +43,14 @@ if __name__ == '__main__':
     feats2D_params = [
         # fps
         {'kind': 'ecfp:4', 'length': 1024},
-        {'kind': 'maccs', 'length': 167},
-        {'kind': 'topological', 'length': 1024},
-        {'kind': 'avalon', 'length': 1024},
-        {'kind': 'erg', 'length': 315},
-        {'kind': 'layered', 'length': 1024},
-        {'kind': 'secfp', 'length': 1024},
-        {'kind': 'pattern', 'length': 1024},
-        {'kind': 'pharm2D', 'n_jobs': -1, 'length': 1024},
+        {'kind': 'topological', 'length': 1024, 'n_jobs': -1},
+        {'kind': 'layered', 'length': 1024, 'n_jobs': -1},
+        {'kind': 'secfp', 'length': 1024, 'n_jobs': -1},
+        {'kind': 'pattern', 'length': 1024, 'n_jobs': -1},
+        {'kind': 'pharm2D', 'length': 1024, 'n_jobs': -1},
+        {'kind': 'avalon', 'length': 1024, 'n_jobs': -1},
+        {'kind': 'maccs', 'length': 167, 'n_jobs': -1},
+        {'kind': 'erg', 'length': 315, 'n_jobs': -1},
 
         # normalize
         {'kind': 'estate', 'length': 79},
@@ -62,9 +62,9 @@ if __name__ == '__main__':
     ]
 
     feat3D_params = [
+        {'kind': 'pharm3D', 'length': 1024},
         {'kind': 'desc3D', 'length': 639, 'replace_nan': True},
         {'kind': 'cats3D', 'length': 126, 'replace_nan': True},
-        {'kind': 'pharm3D', 'length': 1024, },
         {'kind': 'electroshape', 'length': 15, 'replace_nan': True},
         {'kind': 'usr', 'length': 12},
         {'kind': 'usrcat', 'length': 60},

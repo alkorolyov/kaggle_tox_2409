@@ -1,6 +1,5 @@
 import time
 import multiprocessing as mp
-from codecs import ignore_errors
 
 import numpy as np
 import pandas as pd
@@ -121,11 +120,18 @@ def smi2mol(smiles: str) -> Chem.Mol:
     return Chem.MolFromSmiles(smiles) if pd.notna(smiles) else None
 
 
-def embed3d(smiles: pd.Series, n_jobs=-1, n_confs=1):
+def embed3d(smiles: pd.Series, n_jobs=-1, use_auto3d=True, use_gpu=True):
+    n_jobs = mp.cpu_count() if n_jobs == -1 else n_jobs
+
     mols = smiles.apply(Chem.MolFromSmiles)
-    if n_jobs == -1:
-        n_jobs = mp.cpu_count()
-    return Parallel(n_jobs=n_jobs)(delayed(dm.conformers.generate)(mol, n_confs=n_confs, ignore_failure=True) for mol in mols)
+    res = Parallel(n_jobs=n_jobs)(delayed(dm.conformers.generate)(mol, n_confs=1, ignore_failure=True) for mol in mols)
+    mols3d = pd.Series(res, index=smiles.index)
+    na_mask = mols3d.isna()
+
+    if na_mask.any() and use_auto3d:
+        args = auto3D.options(k=1, use_gpu=use_gpu)
+        mols3d.loc[na_mask] = auto3D.smiles2mols(smiles[na_mask], args)
+    return mols3d
 
 
 def embed_auto3d(smiles: pd.Series, k=1, use_gpu=True, verbose=False):
