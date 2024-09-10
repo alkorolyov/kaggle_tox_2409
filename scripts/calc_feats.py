@@ -31,15 +31,6 @@ if __name__ == '__main__':
     train_df = dm.read_csv("../data/processed/train.csv", smiles_column="smi", index_col=0)
     test_df = dm.read_csv("../data/processed/test.csv", smiles_column="smi", index_col=0)
     y_train = pd.read_pickle('../data/processed/y_train.pkl')
-    ohe = OneHotEncoder(sparse_output=False)
-
-
-    def get_x_train(feats):
-        return np.concatenate([feats, ohe.fit_transform(train_df[["prop"]])], axis=1)
-
-
-    def get_x_test(feats):
-        return np.concatenate([feats, ohe.transform(train_df[["prop"]])], axis=1)
 
 
     from molfeat.trans.fp import FPVecTransformer
@@ -113,6 +104,17 @@ if __name__ == '__main__':
             print(params)
             train_feats[params['kind']] = mem.cache(calc_3d_feats, ignore=['n_jobs', 'dtype'])(train_df.smi, **params)
             test_feats[params['kind']] = mem.cache(calc_3d_feats, ignore=['n_jobs', 'dtype'])(test_df.smi, **params)
+
+
+
+    ohe = OneHotEncoder(sparse_output=False)
+
+    def get_x_train(feats):
+        return np.concatenate([feats, ohe.fit_transform(train_df[["prop"]])], axis=1)
+
+    def get_x_test(feats):
+        return np.concatenate([feats, ohe.transform(train_df[["prop"]])], axis=1)
+
 
     # for params in hft_params:
     #     feats = mem.cache(get_hft_predictions, ignore=['n_jobs', 'dtype', 'device'])(train.smi, params, device='cpu', n_jobs=-1)
