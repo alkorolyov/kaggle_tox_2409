@@ -13,6 +13,7 @@ from sklearn.model_selection import KFold, cross_val_score, StratifiedKFold
 from sklearn.base import BaseEstimator, ClassifierMixin
 from joblib import Parallel, delayed
 
+from Auto3D import auto3D
 
 
 class OffsetScaler(BaseEstimator, TransformerMixin):
@@ -124,8 +125,12 @@ def embed3d(smiles: pd.Series, n_jobs=-1, n_confs=1):
     mols = smiles.apply(Chem.MolFromSmiles)
     if n_jobs == -1:
         n_jobs = mp.cpu_count()
-
     return Parallel(n_jobs=n_jobs)(delayed(dm.conformers.generate)(mol, n_confs=n_confs, ignore_failure=True) for mol in mols)
+
+
+def embed_auto3d(smiles: pd.Series, use_gpu=True, verbose=False):
+    args = auto3D.options(k=1, use_gpu=use_gpu, verbose=verbose)
+    return auto3D.smiles2mols(smiles, args)
 
 
 def eval_model(name, model, X, y, random_seed=42, cv=None, scoring='roc_auc'):
