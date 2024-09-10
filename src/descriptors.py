@@ -1,3 +1,5 @@
+from codecs import ignore_errors
+
 import numpy as np
 import pandas as pd
 
@@ -45,15 +47,30 @@ def get_md_descriptors(mol, names: list = None) -> pd.Series:
     return pd.Series(pd.to_numeric(res, errors='coerce'), index=idx)
 
 
-def get_dgl_predictions(smiles: pd.Series, params: dict, n_jobs=-1, dtype=np.float32):
-    trans = PretrainedDGLTransformer(**params, dtype=dtype, n_jobs=n_jobs)
+def get_dgl_predictions(smiles: pd.Series, n_jobs=-1, dtype=np.float32, **params):
+    trans = PretrainedDGLTransformer(**params, n_jobs=n_jobs, dtype=dtype)
     return trans.transform(smiles)
 
-def get_hft_predictions(smiles: pd.Series, params: dict, n_jobs=-1, dtype=np.float32, device='cpu'):
-    trans = PretrainedHFTransformer(**params, n_jobs=n_jobs, dtype=dtype, device=device)
+
+def get_hft_predictions(smiles: pd.Series, **params):
+    trans = PretrainedHFTransformer(**params)
     return trans.transform(smiles)
 
-def get_3d_predictions(smiles: pd.Series, params: dict, dtype=np.float32, n_jobs=-1):
-    mols = mem.cache(embed3d)(smiles, n_confs=None)
+
+def get_2d_predictions(smiles: pd.Series, n_jobs=1, dtype=np.float32, **params):
     trans = FPVecTransformer(**params, n_jobs=n_jobs, dtype=dtype)
-    return trans.transform(mols)
+    return trans.transform(smiles)
+
+
+def get_3d_predictions(smiles: pd.Series, n_confs=1, n_jobs=-1, dtype=np.float32, **params):
+    mols = mem.cache(embed3d, ignore=['n_jobs'])(smiles, n_confs=n_confs, n_jobs=n_jobs)
+    trans = FPVecTransformer(**params, n_jobs=n_jobs, dtype=dtype)
+    # single conformer
+    if n_confs == 1:
+        return trans.transform(mols, ignore_errors=True)
+    # average conformer ensemble
+    elif n_confs > 1:
+        feats = np.zeros((trans.length, 0))
+        for i in range(n_confs):
+            feats += np.concatenate([feats, trans.transform(mols, conformer_id=i, ignore_errors=True)], axis=1)
+        return np.mean(feats, axis=1)

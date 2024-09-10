@@ -1,5 +1,7 @@
 import time
 import multiprocessing as mp
+from codecs import ignore_errors
+
 import numpy as np
 import pandas as pd
 import datamol as dm
@@ -123,7 +125,7 @@ def embed3d(smiles: pd.Series, n_jobs=-1, n_confs=1):
     if n_jobs == -1:
         n_jobs = mp.cpu_count()
 
-    return Parallel(n_jobs=n_jobs)(delayed(dm.conformers.generate)(mol, n_confs=n_confs) for mol in mols)
+    return Parallel(n_jobs=n_jobs)(delayed(dm.conformers.generate)(mol, n_confs=n_confs, ignore_failure=True) for mol in mols)
 
 
 def eval_model(name, model, X, y, random_seed=42, cv=None, scoring='roc_auc'):
