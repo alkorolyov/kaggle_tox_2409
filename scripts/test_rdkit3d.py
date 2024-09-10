@@ -18,7 +18,7 @@ from sklearn.impute import SimpleImputer
 
 from src.config import mem
 from src.utils import embed3d, eval_model, OffsetScaler
-from src.descriptors import get_dgl_predictions, get_hft_predictions, get_3d_predictions, get_2d_predictions
+from src.descriptors import calc_dgl_feats, calc_hft_feats, calc_3d_feats, calc_2d_feats
 
 from rdkit import RDLogger, Chem
 RDLogger.DisableLog('rdApp.*')

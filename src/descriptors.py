@@ -7,7 +7,7 @@ from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculat
 from molfeat.trans.pretrained import PretrainedDGLTransformer, PretrainedHFTransformer
 from molfeat.trans.fp import FPVecTransformer
 from mordred import Calculator, descriptors
-from src.utils import embed3d
+from src.utils import embed3d, embed_auto3d
 from src.config import mem
 
 # choose 200 molecular descriptors
@@ -47,30 +47,22 @@ def get_md_descriptors(mol, names: list = None) -> pd.Series:
     return pd.Series(pd.to_numeric(res, errors='coerce'), index=idx)
 
 
-def get_dgl_predictions(smiles: pd.Series, n_jobs=-1, dtype=np.float32, **params):
+def calc_dgl_feats(smiles: pd.Series, n_jobs=-1, dtype=np.float32, **params):
     trans = PretrainedDGLTransformer(**params, n_jobs=n_jobs, dtype=dtype)
     return trans.transform(smiles)
 
 
-def get_hft_predictions(smiles: pd.Series, **params):
+def calc_hft_feats(smiles: pd.Series, **params):
     trans = PretrainedHFTransformer(**params)
     return trans.transform(smiles)
 
 
-def get_2d_predictions(smiles: pd.Series, n_jobs=1, dtype=np.float32, **params):
+def calc_2d_feats(smiles: pd.Series, n_jobs=1, dtype=np.float32, **params):
     trans = FPVecTransformer(**params, n_jobs=n_jobs, dtype=dtype)
     return trans.transform(smiles)
 
 
-def get_3d_predictions(smiles: pd.Series, n_confs=1, n_jobs=-1, dtype=np.float32, **params):
-    mols = mem.cache(embed3d, ignore=['n_jobs'])(smiles, n_confs=n_confs, n_jobs=n_jobs)
+def calc_3d_feats(smiles: pd.Series, n_jobs=-1, dtype=np.float32, **params):
+    mols = mem.cache(embed_auto3d, ignore=['use_gpu', 'verbose'])(smiles)
     trans = FPVecTransformer(**params, n_jobs=n_jobs, dtype=dtype)
-    # single conformer
-    if n_confs == 1:
-        return trans.transform(mols, ignore_errors=True)
-    # average conformer ensemble
-    elif n_confs > 1:
-        feats = np.zeros((trans.length, 0))
-        for i in range(n_confs):
-            feats += np.concatenate([feats, trans.transform(mols, conformer_id=i, ignore_errors=True)], axis=1)
-        return np.mean(feats, axis=1)
+    return trans.transform(mols, ignore_errors=True)

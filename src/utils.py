@@ -128,8 +128,8 @@ def embed3d(smiles: pd.Series, n_jobs=-1, n_confs=1):
     return Parallel(n_jobs=n_jobs)(delayed(dm.conformers.generate)(mol, n_confs=n_confs, ignore_failure=True) for mol in mols)
 
 
-def embed_auto3d(smiles: pd.Series, use_gpu=True, verbose=False):
-    args = auto3D.options(k=1, use_gpu=use_gpu, verbose=verbose)
+def embed_auto3d(smiles: pd.Series, k=1, use_gpu=True, verbose=False):
+    args = auto3D.options(k=k, use_gpu=use_gpu, verbose=verbose)
     return auto3D.smiles2mols(smiles, args)
 
 
