@@ -30,7 +30,7 @@ dependencies:
   - ray-default >=2.6.3,<2.7
   # chem
   - mols2grid
-  - rdkit>=2024.3.5
+  - rdkit
   - datamol
   - molfeat
   - dglteam::dgl<=2.0
