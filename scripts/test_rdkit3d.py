@@ -24,24 +24,27 @@ from rdkit import RDLogger, Chem
 RDLogger.DisableLog('rdApp.*')
 
 if __name__ == '__main__':
-    train = dm.read_csv('../data/processed/train.csv', smiles_column='smi', index_col=0)[:5]
-    test = dm.read_csv('../data/processed/test.csv', smiles_column='smi', index_col=0)[:5]
+    FPVecTransformer('morgan')
 
-    n_confs = 3
-    mols = mem.cache(embed3d, ignore=['n_jobs'])(train.smi[0:1], n_confs=n_confs, n_jobs=1)
-    trans = FPVecTransformer('desc3D', length=639, n_jobs=1)
 
-    print('trans.transform(mols, ...)')
-    # print(trans.transform(mols, conformer_id=0, ignore_errors=False)[0, :5].round(3))
-    print(trans.transform(mols, conformer_id=1, ignore_errors=False)[0, :5].round(3))
-
-    print('trans(mols, ... ')
-    # print(trans(mols, conformer_id=0, ignore_errors=False)[0, :5].round(3))
-    print(trans(mols, conformer_id=1, ignore_errors=False)[0, :5].round(3))
-
-    from molfeat.calc.descriptors import RDKitDescriptors3D
-
-    rd3d = RDKitDescriptors3D()
-    print('rd3d = RDKitDescriptors3D()')
-    # print(rd3d(mols[0], conformer_id=0)[:5].round(3))
-    print(rd3d(mols[0], conformer_id=1)[:5].round(3))
+    # train = dm.read_csv('../data/processed/train.csv', smiles_column='smi', index_col=0)[:5]
+    # test = dm.read_csv('../data/processed/test.csv', smiles_column='smi', index_col=0)[:5]
+    #
+    # n_confs = 3
+    # mols = mem.cache(embed3d, ignore=['n_jobs'])(train.smi[0:1], n_confs=n_confs, n_jobs=1)
+    # trans = FPVecTransformer('desc3D', length=639, n_jobs=1)
+    #
+    # print('trans.transform(mols, ...)')
+    # # print(trans.transform(mols, conformer_id=0, ignore_errors=False)[0, :5].round(3))
+    # print(trans.transform(mols, conformer_id=1, ignore_errors=False)[0, :5].round(3))
+    #
+    # print('trans(mols, ... ')
+    # # print(trans(mols, conformer_id=0, ignore_errors=False)[0, :5].round(3))
+    # print(trans(mols, conformer_id=1, ignore_errors=False)[0, :5].round(3))
+    #
+    # from molfeat.calc.descriptors import RDKitDescriptors3D
+    #
+    # rd3d = RDKitDescriptors3D()
+    # print('rd3d = RDKitDescriptors3D()')
+    # # print(rd3d(mols[0], conformer_id=0)[:5].round(3))
+    # print(rd3d(mols[0], conformer_id=1)[:5].round(3))

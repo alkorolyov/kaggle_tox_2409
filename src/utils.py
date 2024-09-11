@@ -126,8 +126,8 @@ def embed3d(smiles: pd.Series, n_jobs=-1, use_auto3d=True, use_gpu=True):
     mols = smiles.apply(Chem.MolFromSmiles)
     res = Parallel(n_jobs=n_jobs)(delayed(dm.conformers.generate)(mol, n_confs=1, ignore_failure=True) for mol in mols)
     mols3d = pd.Series(res, index=smiles.index)
-    na_mask = mols3d.isna()
 
+    na_mask = mols3d.isna()
     if na_mask.any() and use_auto3d:
         args = auto3D.options(k=1, use_gpu=use_gpu)
         mols3d.loc[na_mask] = auto3D.smiles2mols(smiles[na_mask], args)
