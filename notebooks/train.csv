@@ -1,0 +1,11 @@
+id,smi,prop
+0,Cc1cc(=O)oc2ccc3c(c12)C1(C)OOC1(C)O3,1.01
+1,CN(CC(O)CO)N=O,0.12
+2,O=[N+]([O-])c1ccc(OC2CO2)cc1,1.13
+3,Cn1cnc2cc([N+](=O)[O-])ccc21,0.68
+4,CCC(CO)NCCNC(CC)CO,0.0
+5,CC(C)(C)NCC(O)c1cc(Cl)c(N)c(C(F)(F)F)c1,0.32
+6,Cc1ccc2c(ccc3ccccc32)c1,0.17
+7,CC=Cc1ccc(OC)cc1,0.45
+8,c1ccc2c(c1)-c1cc3c(cc1C1NC21)-c1ccccc1C1NC31,0.87
+9,COc1nsc2cccc([N+](=O)[O-])c12,0.54

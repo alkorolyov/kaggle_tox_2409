@@ -24,6 +24,8 @@ from rdkit import RDLogger, Chem
 RDLogger.DisableLog('rdApp.*')
 
 if __name__ == '__main__':
+    from rdkit import RDConfig
+    from rdkit.Chem.SaltRemover import SaltRemover; SaltRemover()
     FPVecTransformer('morgan')
 
 
