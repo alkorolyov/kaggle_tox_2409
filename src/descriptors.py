@@ -47,22 +47,22 @@ def get_md_descriptors(mol, names: list = None) -> pd.Series:
     return pd.Series(pd.to_numeric(res, errors='coerce'), index=idx)
 
 
-def calc_dgl_feats(smiles: pd.Series, **params):
+def calc_dgl_feats(smiles: pd.Series, **params) -> np.ndarray:
     trans = PretrainedDGLTransformer(**params, n_jobs=-1)
     return trans.transform(smiles)
 
 
-def calc_hft_feats(smiles: pd.Series, **params):
+def calc_hft_feats(smiles: pd.Series, **params) -> np.ndarray:
     trans = PretrainedHFTransformer(**params, n_jobs=-1)
     return trans.transform(smiles)
 
 
-def calc_2d_feats(smiles: pd.Series, n_jobs=1, **params):
+def calc_2d_feats(smiles: pd.Series, n_jobs=1, **params) -> np.ndarray:
     trans = FPVecTransformer(**params, n_jobs=n_jobs)
     return trans.transform(smiles)
 
 
-def calc_3d_feats(smiles: pd.Series, **params):
+def calc_3d_feats(smiles: pd.Series, **params) -> np.ndarray:
     mols = mem.cache(embed3d)(smiles)
     trans = FPVecTransformer(**params)
     return trans.transform(mols, ignore_errors=True)

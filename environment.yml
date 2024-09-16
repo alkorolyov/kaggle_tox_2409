@@ -11,6 +11,7 @@ dependencies:
   - mkl=2024.0
   - python-dotenv
   - pandas
+  - dask
   - rapids
   - scikit-learn
   - xgboost

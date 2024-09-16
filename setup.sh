@@ -5,5 +5,6 @@ CONDA_ENV="chem"
 #source "${HOME}/miniforge3/etc/profile.d/conda.sh"
 #source "${HOME}/miniforge3/etc/profile.d/mamba.sh"
 #conda activate
-
+mamba env create
+mamba activate
 mamba run -n chem python -m ipykernel install --user --name chem
