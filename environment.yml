@@ -23,6 +23,7 @@ dependencies:
   - plotly
   - ipykernel
   - notebook
+  - openpyxl
   - pytorch::pytorch
   - pytorch::pytorch-cuda=11.8
   - transformers
